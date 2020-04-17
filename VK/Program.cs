@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using StartupHelper;
+using System;
 using System.Windows.Forms;
 
-namespace VK
+namespace KeysHelper
 {
     internal static class Program
     {
+        public static StartupManager StartupController = new StartupManager(Application.ProductName, RegistrationScope.Local);
+
+
         /// <summary>
         /// The main entry point for the application.
         /// </summary>

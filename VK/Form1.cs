@@ -10,32 +10,36 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 
-namespace VK
+namespace KeysHelper
 {
     public partial class Form1 : Form
     {
-        private InputSimulator sim = new InputSimulator();
+        private InputSimulator sim;
 
 
         public Form1()
         {
             InitializeComponent();
 
+            // minimize on auto-startup
+            if (Program.StartupController.IsStartedUp)
+            {
+                WindowState = FormWindowState.Minimized;
+            }
+
+            cbStartup.DataBindings.Add("Checked", this, "IsStartupEnabled");
+
             k1.DataSource = Enum.GetValues(typeof(Keys));
             k2.DataSource = Enum.GetValues(typeof(Keys));
 
-            Interceptor.IsBlocking = true;
+            sim = new InputSimulator();
+
             Interceptor.InputSim = sim;
+            Interceptor.IsBlocking = true;
             Interceptor.OnKeyToSimIsDown += SendKeyDown;
             Interceptor.OnKeyToSimIsUp += SendKeyUp;
 
-            this.Disposed += OnDisposed;
-
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
+            Disposed += OnDisposed;
         }
 
         private void OnDisposed(object sender, EventArgs e)
@@ -79,11 +83,6 @@ namespace VK
             //this.Text = keyToSim.ToString() + " OWN";
         }
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-
-        }
-
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             //trayIcon.Visible = false;
@@ -103,5 +102,30 @@ namespace VK
                 //trayIcon.Visible = false;
             }
         }
+
+        public bool IsStartupEnabled
+        {
+            get => Program.StartupController.IsRegistered;
+
+            set
+            {
+                if (IsStartupEnabled)
+                {
+                    if (!value)
+                        Program.StartupController.Unregister();
+                }
+                else
+                {
+                    if (value)
+                        Program.StartupController.Register();
+                }
+            }
+        }
+
+        private void btAdd_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
+

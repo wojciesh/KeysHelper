@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using WindowsInput;
 using WindowsInput.Native;
 
-namespace VK
+namespace KeysHelper
 {
     public static class Interceptor
     {
