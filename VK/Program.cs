@@ -6,7 +6,13 @@ namespace KeysHelper
 {
     internal static class Program
     {
-        public static StartupManager StartupController = new StartupManager(Application.ProductName, RegistrationScope.Local);
+        private static string startupName = Application.ProductName
+#if DEBUG
+            + "_DEBUG"
+#endif
+        ;
+
+        public static StartupManager StartupController = new StartupManager(startupName, RegistrationScope.Local);
 
 
         /// <summary>

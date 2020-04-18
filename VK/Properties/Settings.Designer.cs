@@ -22,5 +22,16 @@ namespace KeysHelper.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        public global::System.Collections.Specialized.StringCollection sims {
+            get {
+                return ((global::System.Collections.Specialized.StringCollection)(this["sims"]));
+            }
+            set {
+                this["sims"] = value;
+            }
+        }
     }
 }

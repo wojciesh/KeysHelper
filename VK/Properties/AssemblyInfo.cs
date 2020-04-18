@@ -6,9 +6,9 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("KeysHelper")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Simulate keys using other keys.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Wojciech Warpechowski")]
 [assembly: AssemblyProduct("KeysHelper")]
 [assembly: AssemblyCopyright("Copyright © Wojciech Warpechowski 2020")]
 [assembly: AssemblyTrademark("")]

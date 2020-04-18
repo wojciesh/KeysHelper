@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using WindowsInput;
@@ -9,6 +11,8 @@ namespace KeysHelper
 {
     public static class Interceptor
     {
+        public static IDictionary<Keys, Keys> ToSim { get; set; }
+
         public static InputSimulator InputSim { get; set; }
         public static bool IsBlocking { get; set; } = true;
 
@@ -19,15 +23,17 @@ namespace KeysHelper
         private static IntPtr _hookID = IntPtr.Zero;
 
         private const int WH_KEYBOARD_LL = 13;
+        private static LowLevelKeyboardProc hookCallback = HookCallback;
         // IntPtr prevent casting on use:
         private readonly static IntPtr WM_KEYDOWN = new IntPtr(0x0100);
         private readonly static IntPtr WM_KEYUP = new IntPtr(0x0101);
         private readonly static IntPtr minusOne = new IntPtr(-1);
 
 
+
         public static void Start()
         {
-            _hookID = SetHook(HookCallback);
+            _hookID = SetHook(hookCallback);
         }
 
         public static void Stop()
@@ -61,20 +67,13 @@ namespace KeysHelper
                     int vkCode = Marshal.ReadInt32(lParam);
                     Keys k = (Keys)vkCode;
 
-                    switch (k)
+                    // is simulation needed for this key?
+                    KeyValuePair<Keys, Keys> sim = ToSim.FirstOrDefault(x => x.Key == k);
+                    if (sim.Key != default(Keys) && sim.Value != default(Keys))
                     {
-                        case Keys.X:
-                            k = Keys.C;
-                            break;
-                        case Keys.S:
-                            k = Keys.D;
-                            break;
-                        case Keys.W:
-                            k = Keys.E;
-                            break;
+                        k = sim.Value;  // key to simulate
+                        isMod = true;   // yes, do simulation
                     }
-
-                    isMod = (Keys)vkCode != k;
 
                     if (isMod)
                     {
