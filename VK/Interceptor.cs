@@ -11,6 +11,7 @@ namespace KeysHelper
 {
     public static class Interceptor
     {
+        public static VirtualKeyCode ModKey { get; set; }
         public static IDictionary<Keys, Keys> ToSim { get; set; }
 
         public static InputSimulator InputSim { get; set; }
@@ -56,7 +57,7 @@ namespace KeysHelper
         {
             bool isMod = false;
             //if (InputSim.InputDeviceState.IsHardwareKeyDown(VirtualKeyCode.APPS))
-            if (InputSim.InputDeviceState.IsHardwareKeyDown(VirtualKeyCode.RCONTROL))
+            if (InputSim.InputDeviceState.IsHardwareKeyDown(ModKey))
             //  inputSim.InputDeviceState.IsHardwareKeyDown(VirtualKeyCode.LCONTROL) ||
             //  inputSim.InputDeviceState.IsHardwareKeyDown(VirtualKeyCode.RCONTROL))
             {

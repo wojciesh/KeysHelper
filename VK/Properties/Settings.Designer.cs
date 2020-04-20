@@ -33,5 +33,17 @@ namespace KeysHelper.Properties {
                 this["sims"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("LControlKey")]
+        public string modkey {
+            get {
+                return ((string)(this["modkey"]));
+            }
+            set {
+                this["modkey"] = value;
+            }
+        }
     }
 }

@@ -5,5 +5,8 @@
     <Setting Name="sims" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
+    <Setting Name="modkey" Type="System.String" Scope="User">
+      <Value Profile="(Default)">LControlKey</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

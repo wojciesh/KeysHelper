@@ -17,9 +17,23 @@ namespace KeysHelper
     public partial class Form1 : Form
     {
         private static InputSimulator sim = new InputSimulator();
+
         private static SortedDictionary<Keys, Keys> toSim = new SortedDictionary<Keys, Keys>();
         public static readonly object lock_toSim = new object();
         private const string toSim_settingsName = "sims";
+
+        public static VirtualKeyCode ModKey
+        {
+            get => s_modKey;
+            private set
+            {
+                s_modKey = value;
+                Interceptor.ModKey = value;
+            }
+        }
+        private static VirtualKeyCode s_modKey = VirtualKeyCode.RCONTROL;
+
+        private bool IsLoaded { get; set; } = false;
 
 
         public Form1()
@@ -44,10 +58,18 @@ namespace KeysHelper
                 .Where(k => (int)k >= 8 && (int)k < 65535)  // only keyboard keys
                 .Distinct()                                 // no dups
                 .ToList();
-            k1.DataSource = new BindingSource(allKeys, null);
-            k2.DataSource = new BindingSource(allKeys, null);
+            cbKeyToPress.DataSource = new BindingSource(allKeys, null);
+            cbKeyToSim.DataSource = new BindingSource(allKeys, null);
 
+            // load & set ModKey
+            cbModKey.DataSource = new BindingSource(allKeys, null);
+            if (!Enum.TryParse(Settings.Default.modkey, out VirtualKeyCode mk))
+                mk = VirtualKeyCode.RCONTROL;
+            ModKey = mk;
+            cbModKey.SelectedItem = (Keys)ModKey;
 
+            // setup keyboard Interceptor
+            // Interceptor.ModKey = ModKey; // <- set in ModKey setter
             Interceptor.ToSim = toSim;
             Interceptor.InputSim = sim;
             Interceptor.IsBlocking = true;
@@ -56,6 +78,8 @@ namespace KeysHelper
 
 
             Disposed += OnDisposed;
+
+            IsLoaded = true;
         }
 
         private void OnDisposed(object sender, EventArgs e)
@@ -69,6 +93,7 @@ namespace KeysHelper
 
         private void SendKeyUp(object sender, Keys keyToSim)
         {
+            // release key to sim
             sim.Keyboard.KeyUp((VirtualKeyCode)keyToSim);
 
             //this.Text = keyToSim.ToString() + " UP";
@@ -76,9 +101,28 @@ namespace KeysHelper
 
         private void SendKeyDown(object sender, Keys keyToSim)
         {
-            // CONTROL OFF
-            sim.Keyboard.KeyUp(VirtualKeyCode.CONTROL);
+            // ModKey OFF
+            VirtualKeyCode mk = ModKey;
+            switch (ModKey)     // some non-pressable -> pressable keys
+            {
+                case VirtualKeyCode.RCONTROL:
+                case VirtualKeyCode.LCONTROL:
+                    mk = VirtualKeyCode.CONTROL;
+                    break;
+                case VirtualKeyCode.RMENU:
+                case VirtualKeyCode.LMENU:
+                    mk = VirtualKeyCode.MENU;
+                    break;
+                case VirtualKeyCode.RSHIFT:
+                case VirtualKeyCode.LSHIFT:
+                    mk = VirtualKeyCode.SHIFT;
+                    break;
+            }
+            // mod key up
+            sim.Keyboard.KeyUp(mk);
 
+
+            // preserve alt modifier (needed for Polish language)
             bool isAlt = sim.InputDeviceState.IsHardwareKeyDown(VirtualKeyCode.RMENU);
             if (isAlt)
             {
@@ -86,8 +130,10 @@ namespace KeysHelper
                 sim.Keyboard.KeyDown(VirtualKeyCode.MENU);
             }
 
+            // press key to sim
             sim.Keyboard.KeyDown((VirtualKeyCode)keyToSim);
 
+            // preserve alt modifier (needed for Polish language)
             if (isAlt)
             {
                 sim.Keyboard.KeyUp(VirtualKeyCode.MENU);
@@ -95,17 +141,15 @@ namespace KeysHelper
             }
 
 
-            // CONTROL ON 
-            sim.Keyboard.KeyDown(VirtualKeyCode.CONTROL);
+            // ModKey ON 
+            sim.Keyboard.KeyDown(mk);
 
             //this.Text = keyToSim.ToString() + " OWN";
         }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            //trayIcon.Visible = false;
-            this.Show();
-            this.WindowState = FormWindowState.Normal;
+            miShow.PerformClick();
         }
 
         private void Form1_Resize(object sender, EventArgs e)
@@ -142,14 +186,14 @@ namespace KeysHelper
 
         private void btAdd_Click(object sender, EventArgs e)
         {
-            var id = (Keys)k1.SelectedValue;
+            var id = (Keys)cbKeyToPress.SelectedValue;
 
             lock (lock_toSim)
             {
                 if (toSim.ContainsKey(id))
-                    toSim[id] = (Keys)k2.SelectedValue;
+                    toSim[id] = (Keys)cbKeyToSim.SelectedValue;
                 else
-                    toSim.Add(id, (Keys)k2.SelectedValue);
+                    toSim.Add(id, (Keys)cbKeyToSim.SelectedValue);
             }
 
             UpdateGrid();
@@ -202,6 +246,39 @@ namespace KeysHelper
             UpdateGrid();
 
             SettingsDicHelper.SaveDic(toSim, toSim_settingsName, true);
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void cbModKey_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (!IsLoaded)
+                return;
+
+            Keys mk = (Keys)cbModKey.SelectedItem;
+            if (mk != Keys.None)
+            {
+                ModKey = (VirtualKeyCode)mk;
+
+                // save to Settings
+                Settings.Default.modkey = ModKey.ToString();
+                Settings.Default.Save();
+            }
+        }
+
+        private void showToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //trayIcon.Visible = false;
+            this.Show();
+            this.WindowState = FormWindowState.Normal;
+        }
+
+        private void miClose_Click(object sender, EventArgs e)
+        {
+            Close();
         }
     }
 }
